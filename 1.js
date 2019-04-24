@@ -103,7 +103,7 @@ function scoreSyllables(syl1, syl2) {
 	let syl1mod = syl1;
 	let syl2mod = syl2;
 
-	//в случае ударного слога важность гласной должна существенно вырасти
+	//в случае ударного слога важность гласной (и не только) должна существенно вырасти
 	if (isAccent(syl1)) {
 		modScore = 5;
 		/*уберем ударения из слогов*/
@@ -119,43 +119,39 @@ function scoreSyllables(syl1, syl2) {
 	if ( syl1mod[vowel1] === syl2mod[vowel2] ) score += vowelWeight * modScore / 4;
 
 	//для согласных до
-	outer:
-	for (let i = 0; i < vowel1; i++) {
-		for (let j = 0; j < vowel2; j++) {
-			//таким образом избегаем влияния сдвоенных согласных
-			if ( checkLetterEqual(syl1mod[i], syl1mod[i-1]) ) continue outer;
-			if ( checkLetterEqual(syl2mod[j], syl2mod[j-1]) ) continue;
-			if ( syl1mod[i] === syl2mod[j] ) {
-				score += 1.5 * consonantWeight * modScore;
-				continue outer;
-			}
-			if ( checkLetterEqual(syl1mod[i], syl2mod[j]) ) {
-				score += consonantWeight * modScore;
-				continue outer;
-			}
-		}
-	}
-
+	conditionsPrefix = {startI: 0, endI: vowel1, startJ: 0, endJ: vowel2, syl1: syl1mod, syl2: syl2mod, scoreMultiplier: consonantWeight * modScore};
 	//для согласных после
-	outer:
-	for (let i = vowel1 + 1; i < syl1mod.length; i++) {
-		for (let j = vowel2 + 1; j < syl2mod.length; j++) {
+	conditionsPostfix = {startI: vowel1+1, endI: syl1mod.length, startJ: vowel2+1, endJ: syl2mod.length, syl1: syl1mod, syl2: syl2mod, scoreMultiplier: consonantWeight * modScore};
+	//для согласных до-после
+	conditionsPrePostfix = {startI: 0, endI: vowel1, startJ: vowel2+1, endJ: syl2mod.length, syl1: syl1mod, syl2: syl2mod, scoreMultiplier: consonantWeight * modScore / 4};
+	//для согласных после-до
+	conditionsPostPrefix = {startI: vowel1+1, endI: syl1mod.length, startJ: 0, endJ: vowel2, syl1: syl1mod, syl2: syl2mod, scoreMultiplier: consonantWeight * modScore / 4};
 
-			if ( checkLetterEqual(syl1mod[i], syl1mod[i - 1]) ) continue outer;
-			if ( checkLetterEqual(syl2mod[j], syl2mod[j - 1]) ) continue;
-			
-			if ( syl1mod[i] === syl2mod[j] ) {
-				score += 1.5 * consonantWeight * modScore;
-				continue outer;
-			}
-			if ( checkLetterEqual(syl1mod[i],syl2mod[j]) ) {
-				score += consonantWeight * modScore;
-				continue outer;
-			}
-		}
-	}
+	score+=addScores(conditionsPrefix)+addScores(conditionsPostfix)+addScores(conditionsPrePostfix)+addScores(conditionsPostPrefix);
 	return score;
 }
+
+/*вспомогательная функция, перебирает буквы, сравнивает, начисляет очки, чтобы не повторять код*/
+function addScores(obj) {
+	let addScore = 0;
+	outer:
+	for (let i = obj.startI; i < obj.endI; i++) {
+		for (let j = obj.startJ; j < obj.endJ; j++) {
+			if ( checkLetterEqual(obj.syl1[i], obj.syl1[i - 1]) ) continue outer;
+			if ( checkLetterEqual(obj.syl2[j], obj.syl2[j - 1]) ) continue;
+			if ( obj.syl1[i] === obj.syl2[j] ) {
+				addScore += 1.5 * obj.scoreMultiplier;
+				continue outer;
+			}
+			if ( checkLetterEqual(obj.syl1[i],obj.syl2[j]) ) {
+				addScore += obj.scoreMultiplier;
+				continue outer;
+			}
+		}
+	}
+	return addScore;
+}
+
 
 /*разбивает слово на слоги*/
 function wordDivide(word) {
