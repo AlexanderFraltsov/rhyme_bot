@@ -1,4 +1,4 @@
-/*загружаем словарь ударений, выделяем из него термины в массив - termins - возможно есть смысл записать этот файл отдельно (пока что массив для отладки)*/
+/*загружаем словарь ударений, выделяем из него термины в массив - termins (пока что массив для отладки)*/
 var termins = ["нарко'тик", "ко'тик", "сапо'г", "кра'н", "шлакобло'к", "суббо'тник", "мо'тик"];
 
 //гласные буквы
@@ -14,6 +14,9 @@ const equalLetters = ['ая', 'оё', 'эе', 'ую', 'иы', 'тд', 'бп', '�
 var alert1 = "Уточните, на какой слог приходится ударение в вашем слове (хорошо бы получить число от 1 до 9007199254740992 включительно)";
 
 
+/*-------------------------------------------------------*/
+
+
 //получаем слово - word - от пользователя (пока что задаем сами)
 var receivedWord = 'КОТИК';
 // = prompt('введи свое слово, щенок', 'котик');
@@ -22,19 +25,19 @@ receivedWord = receivedWord.toLowerCase();
 
 //предусматриваем слово с "ё" - ударение всегда падает на него
 for (let i = 0; i < receivedWord.length; i++) {
-  if (receivedWord[i] === 'ё') {
-    receivedWord = receivedWord.replace("ё", "ё'");
-  }
+	if (receivedWord[i] === 'ё') {
+		receivedWord = receivedWord.replace("ё", "ё'");
+	}
 }
 
 //заменяем слово на слово с ударением, если его нет, или спрашиваем, на какой оно слог
 if (!isAccent(receivedWord)) {
-  //производим поиск слова в словаре (там оно с ударением) и записываемв переменную, чтобы не искать дважды
-  receivedWord = getAccent(receivedWord, termins);
+	//производим поиск слова в словаре (там оно с ударением) и записываемв переменную, чтобы не искать дважды
+	receivedWord = getAccent(receivedWord, termins);
 }
 
 if (!isAccent(receivedWord)) {
-  console.log(alert1);
+	console.log(alert1);
 }
 
 
@@ -43,59 +46,115 @@ var rhyme = "nono";
 //выводим рифму (пока просто слово с ударением)
 console.log(receivedWord);
 //alert(receivedWord);
-
-console.log(checkLetterEqual('н', 'л'));
-
 console.log(wordDivide(receivedWord));
+console.log(scoreSyllables("грот", "бад"));
 
-
-/*---------------------------------ФУНКЦИИ--------------------------------------*/
+/*------------------------ФУНКЦИИ------------------------*/
 
 //проверяет стоит ли ударение
 function isAccent(word) {
-  let accentes = 0;
-  
-  for (let i = 0; i < word.length; i++) {
-  if (word[i] === "'") {
-    accentes++;
-    }
-  }
-  if (accentes > 0) {
-    return true;
-    } 
-  return false;
+	let accentes = 0;
+	
+	for (let i = 0; i < word.length; i++) {
+		if (word[i] === "'") {
+		accentes++;
+		}
+	}
+	if (accentes > 0) {
+		return true;
+	} 
+	return false;
 }
 
 /*ищет слово в словаре, чтобы понять, где в нём ударение*/
 function getAccent(word, dictionary) {
-  var length = word.length;
-  for (let i = 0; i < termins.length; i++) {
-    //сначала смотрим, что слово в словаре нужной длины
-    if (word.length !== dictionary[i].length - 1) continue;
-    //убираем ударение из словарного слова и сравниваем
-    let dictWord = dictionary[i].replace("'", "");
-    if (word === dictWord) {
-      word = dictionary[i]; 
-      break;
-    }
-  }
-  return word;
+	var length = word.length;
+	for (let i = 0; i < termins.length; i++) {
+		//сначала смотрим, что слово в словаре нужной длины
+		if (word.length !== dictionary[i].length - 1) continue;
+		//убираем ударение из словарного слова и сравниваем
+		let dictWord = dictionary[i].replace("'", "");
+		if (word === dictWord) {
+			word = dictionary[i]; 
+			break;
+		}
+	}
+	return word;
 }
 
 //проверяет, эквивалентны ли буквы по звучанию
 function checkLetterEqual(letter1, letter2) {
-  if (letter1 === letter2) return true;	
-  for (let i = 0; i < equalLetters.length; i++) {
-    if ((letter1 === equalLetters[i][0] && letter2 === equalLetters[i][1]) ||
-    	(letter1 === equalLetters[i][1] && letter2 === equalLetters[i][0])) return true;
-  } 
-  return false;
+	if (letter1 === letter2) return true;	
+	for (let i = 0; i < equalLetters.length; i++) {
+		if ((letter1 === equalLetters[i][0] && letter2 === equalLetters[i][1]) ||
+			(letter1 === equalLetters[i][1] && letter2 === equalLetters[i][0])) return true;
+	} 
+	return false;
 }
 
-//даёт количественную оценку схожести слогов
 function scoreSyllables(syl1, syl2) {
+	let score = 0;
+	//модификатор на случай ударного слога
+	let modScore = 1;
+	//мощь гласных и согласных
+	let vowelWeight = 3;
+	let consonantWeight = vowelWeight / 3;
 
+	let syl1mod = syl1;
+	let syl2mod = syl2;
 
+	//в случае ударного слога важность гласной должна существенно вырасти
+	if (isAccent(syl1)) {
+		modScore = 5;
+		/*уберем ударения из слогов*/
+		syl1mod = syl1.replace("'", "");
+		syl2mod = syl2.replace("'", "");
+	}
+
+	let vowel1 = findVowelsNums(syl1mod)[0];
+	let vowel2 = findVowelsNums(syl2mod)[0];
+
+	//счет для гласных
+	if ( checkLetterEqual(syl1mod[vowel1], syl2mod[vowel2]) ) score += vowelWeight * modScore;
+	if ( syl1mod[vowel1] === syl2mod[vowel2] ) score += vowelWeight * modScore / 4;
+
+	//для согласных до
+	outer:
+	for (let i = 0; i < vowel1; i++) {
+		for (let j = 0; j < vowel2; j++) {
+			//таким образом избегаем влияния сдвоенных согласных
+			if ( checkLetterEqual(syl1mod[i], syl1mod[i-1]) ) continue outer;
+			if ( checkLetterEqual(syl2mod[j], syl2mod[j-1]) ) continue;
+			if ( syl1mod[i] === syl2mod[j] ) {
+				score += 1.5 * consonantWeight * modScore;
+				continue outer;
+			}
+			if ( checkLetterEqual(syl1mod[i], syl2mod[j]) ) {
+				score += consonantWeight * modScore;
+				continue outer;
+			}
+		}
+	}
+
+	//для согласных после
+	outer:
+	for (let i = vowel1 + 1; i < syl1mod.length; i++) {
+		for (let j = vowel2 + 1; j < syl2mod.length; j++) {
+
+			if ( checkLetterEqual(syl1mod[i], syl1mod[i - 1]) ) continue outer;
+			if ( checkLetterEqual(syl2mod[j], syl2mod[j - 1]) ) continue;
+			
+			if ( syl1mod[i] === syl2mod[j] ) {
+				score += 1.5 * consonantWeight * modScore;
+				continue outer;
+			}
+			if ( checkLetterEqual(syl1mod[i],syl2mod[j]) ) {
+				score += consonantWeight * modScore;
+				continue outer;
+			}
+		}
+	}
+	return score;
 }
 
 /*разбивает слово на слоги*/
@@ -110,17 +169,17 @@ function wordDivide(word) {
 	}
 
 	let accentPos = findAccentPosition(word);
-    
-    //переменные, которые надо заранее определить
-    let newStart = 0;
-    let previousStep = 0;
-  
+
+	//переменные, которые надо заранее определить
+	let newStart = 0;
+	let previousStep = 0;
+
 	for (let i = 0; i < vowelsNums.length; i++) {
 		let syllable = '';
 		let step = 1;
- 		
- 		/*наличие ударения увеличивает шаг, шаг - это количество 
- 		букв, которое надо взять после текущей гласной в слог*/
+		
+		/*наличие ударения увеличивает шаг, шаг - это количество 
+		букв, которое надо взять после текущей гласной в слог*/
 		if (accentPos > vowelsNums[i] && accentPos < vowelsNums[i + 1]) {
 			step++;
 		}
