@@ -1,5 +1,5 @@
 /*загружаем словарь ударений, выделяем из него термины в массив - termins (пока что массив для отладки)*/
-var termins = ["нарко'тик", "ко'тик", "сапо'г", "кра'н", "шлакобло'к", "суббо'тник", "мо'тик"];
+let termins = ["нарко'тик", "ко'тик", "сапо'г", "кра'н", "шлакобло'к", "суббо'тник", "мо'тик"];
 
 //гласные буквы
 const vowels = ['а', 'е', 'ё', 'и', 'о', 'у', 'ы', 'э', 'ю', 'я', 'А', 'Е', 'Ё', 'И', 'О', 'У', 'Ы', 'Э', 'Ю', 'Я'];
@@ -11,14 +11,13 @@ const otherLetters = ['ь', 'ъ', 'Ь', 'Ъ'];
 const equalLetters = ['ая', 'оё', 'эе', 'ую', 'иы', 'тд', 'бп', 'вф', 'гк', 'шщ', 'тц', 'нм', 'рл', 'жш', 'жз', 'дз', 'чш', 'сз', 'сш'];
 
 //тревожные фразы
-var alert1 = "Уточните, на какой слог приходится ударение в вашем слове (хорошо бы получить число от 1 до 9007199254740992 включительно)";
-
+const alert1 = "Уточните, на какой слог приходится ударение в вашем слове (хорошо бы получить число от 1 до 9007199254740992 включительно)";
 
 /*-------------------------------------------------------*/
 
 
 //получаем слово - word - от пользователя (пока что задаем сами)
-var receivedWord = 'КОТИК';
+let receivedWord = 'КОТИК';
 // = prompt('введи свое слово, щенок', 'котик');
 
 receivedWord = receivedWord.toLowerCase();
@@ -31,44 +30,50 @@ for (let i = 0; i < receivedWord.length; i++) {
 }
 
 //заменяем слово на слово с ударением, если его нет, или спрашиваем, на какой оно слог
-if (!isAccent(receivedWord)) {
+if (findAccentPosition(receivedWord) === -1) {
 	//производим поиск слова в словаре (там оно с ударением) и записываемв переменную, чтобы не искать дважды
 	receivedWord = getAccent(receivedWord, termins);
 }
 
-if (!isAccent(receivedWord)) {
+if (findAccentPosition(receivedWord) === -1) {
 	console.log(alert1);
 }
 
+let rhyme = "no";
 
-var rhyme = "nono";
+{
+	let max = 0;
+	for (let i = 0; i < termins.length; i++) {
+		if (receivedWord === termins[i]) continue;
+		let score = scoreWords(receivedWord, termins[i])
+		if (score > max) {
+			max = score;
+			rhyme = termins[i];
+		}
+		console.log(termins[i] + ', ' + score);
+	}
+}
+
 
 //выводим рифму (пока просто слово с ударением)
-console.log(receivedWord);
+console.log(receivedWord + ', ' + rhyme);
 //alert(receivedWord);
-console.log(wordDivide(receivedWord));
-console.log(scoreSyllables("грот", "бад"));
+
 
 /*------------------------ФУНКЦИИ------------------------*/
 
-//проверяет стоит ли ударение
-function isAccent(word) {
-	let accentes = 0;
-	
+//находит позицию ударения в слове
+function findAccentPosition(word) {
+	let accentPos = -1;
 	for (let i = 0; i < word.length; i++) {
-		if (word[i] === "'") {
-		accentes++;
-		}
+		if (word[i] === "'") accentPos = i;
 	}
-	if (accentes > 0) {
-		return true;
-	} 
-	return false;
+	return accentPos;
 }
 
 /*ищет слово в словаре, чтобы понять, где в нём ударение*/
 function getAccent(word, dictionary) {
-	var length = word.length;
+	let length = word.length;
 	for (let i = 0; i < termins.length; i++) {
 		//сначала смотрим, что слово в словаре нужной длины
 		if (word.length !== dictionary[i].length - 1) continue;
@@ -92,6 +97,44 @@ function checkLetterEqual(letter1, letter2) {
 	return false;
 }
 
+//начисляет очки за совпадение слов
+function scoreWords(word1,word2) {
+	let score = 0;
+	let syllables1 = wordDivide(word1);
+	let syllables2 = wordDivide(word2);
+	let l1 = syllables1.length;
+	let l2 = syllables2.length;
+
+	//ударные слоги
+	let accentedSyl1Pos = findSyllableWithAccent(word1) - 1;
+	let accentedSyl2Pos = findSyllableWithAccent(word2) - 1;
+	let delta = accentedSyl1Pos - accentedSyl2Pos;
+	//сравниваем ударные слоги
+	score += scoreSyllables(syllables1[accentedSyl1Pos], syllables2[accentedSyl2Pos]);
+	//сравниваем слоги после (!!цикл для большего количества слогов)
+	if (l1-accentedSyl1Pos >= l2-accentedSyl2Pos) {
+		for (let i = accentedSyl1Pos + 1; i < l1; i++) {
+			score += scoreSyllables(syllables1[i], syllables2[i - delta] || '');
+		}
+	} else {
+		for (let i = accentedSyl2Pos + 1; i < l2; i++) {
+			score += scoreSyllables(syllables1[i + delta] || '', syllables2[i]);
+		}
+	}	
+	//сравниваем слоги до
+	if (accentedSyl1Pos >= accentedSyl2Pos) {
+		for (let i = accentedSyl1Pos - 1; i >= 0; i--) {
+			score += scoreSyllables(syllables1[i], syllables2[i - delta] || '');
+		}
+	} else {
+		for (let i = accentedSyl2Pos - 1; i >= 0; i--) {
+			score += scoreSyllables(syllables1[i + delta] || '', syllables2[i]);
+		}
+	}
+	return score;
+}
+
+//начисляет очки за совпадение слогов
 function scoreSyllables(syl1, syl2) {
 	let score = 0;
 	//модификатор на случай ударного слога
@@ -99,25 +142,26 @@ function scoreSyllables(syl1, syl2) {
 	//мощь гласных и согласных
 	let vowelWeight = 3;
 	let consonantWeight = vowelWeight / 3;
-
-	let syl1mod = syl1;
-	let syl2mod = syl2;
+	//предусмотрим ситуацию когда слог сравнивается с undefined
+	let syl1mod = syl1 || '';
+	let syl2mod = syl2 || '';
 
 	//в случае ударного слога важность гласной (и не только) должна существенно вырасти
-	if (isAccent(syl1)) {
+	if (findAccentPosition(syl1)!==-1) {
 		modScore = 5;
 		/*уберем ударения из слогов*/
 		syl1mod = syl1.replace("'", "");
 		syl2mod = syl2.replace("'", "");
 	}
-
 	let vowel1 = findVowelsNums(syl1mod)[0];
 	let vowel2 = findVowelsNums(syl2mod)[0];
-
 	//счет для гласных
-	if ( checkLetterEqual(syl1mod[vowel1], syl2mod[vowel2]) ) score += vowelWeight * modScore;
-	if ( syl1mod[vowel1] === syl2mod[vowel2] ) score += vowelWeight * modScore / 4;
-
+	if ( checkLetterEqual(syl1mod[vowel1], syl2mod[vowel2]) ) {
+		score += vowelWeight * modScore;
+	}
+	if ( syl1mod[vowel1] === syl2mod[vowel2] ) {
+		score += vowelWeight * modScore / 4;
+	}
 	//для согласных до
 	conditionsPrefix = {startI: 0, endI: vowel1, startJ: 0, endJ: vowel2, syl1: syl1mod, syl2: syl2mod, scoreMultiplier: consonantWeight * modScore};
 	//для согласных после
@@ -131,7 +175,8 @@ function scoreSyllables(syl1, syl2) {
 	return score;
 }
 
-/*вспомогательная функция, перебирает буквы, сравнивает, начисляет очки, чтобы не повторять код*/
+/*вспомогательная функция, перебирает буквы, сравнивает, 
+начисляет очки, чтобы не повторять код*/
 function addScores(obj) {
 	let addScore = 0;
 	outer:
@@ -152,10 +197,8 @@ function addScores(obj) {
 	return addScore;
 }
 
-
 /*разбивает слово на слоги*/
 function wordDivide(word) {
-
 	let vowelsNums = findVowelsNums(word);
 	let syllables = [];
 	//если состоит из одного слога, то этот слог всё слово
@@ -163,9 +206,7 @@ function wordDivide(word) {
 		syllables.push(word);
 		return syllables;
 	}
-
 	let accentPos = findAccentPosition(word);
-
 	//переменные, которые надо заранее определить
 	let newStart = 0;
 	let previousStep = 0;
@@ -173,18 +214,15 @@ function wordDivide(word) {
 	for (let i = 0; i < vowelsNums.length; i++) {
 		let syllable = '';
 		let step = 1;
-		
 		/*наличие ударения увеличивает шаг, шаг - это количество 
 		букв, которое надо взять после текущей гласной в слог*/
 		if (accentPos > vowelsNums[i] && accentPos < vowelsNums[i + 1]) {
 			step++;
 		}
-		
 		//шаг уменьшается, если рядом гласная, чтобы её не захватить
 		if (vowelsNums[i + 1] - vowelsNums[i] <= step + 1) {
 			step--;
 		}
-		
 		//формируем слоги
 		if (i === 0) /*первый слог*/ {
 			for (let j = 0; j <= vowelsNums[i] + step; j++) {
@@ -200,30 +238,18 @@ function wordDivide(word) {
 			}
 		}
 		syllables.push(syllable);
-		
 		//шаг предыдущего слога
 		previousStep = step;
-		
 		//начало нового слога
 		newStart = vowelsNums[i] + previousStep + 1;
 	}
 	return syllables;
 }
 
-//находит позицию ударения в слове
-function findAccentPosition(word) {
-	let accentPos = -1;
-	for (let i = 0; i < word.length; i++) {
-		if (word[i] === "'") accentPos = i;
-	}
-	return accentPos;
-}
-
 //создаёт массив с позициями гласных букв в слове
 function findVowelsNums(word) {
 	let vowelsNums = [];
 	for (let i = 0; i < word.length; i++) {
-		
 		//может упростить потом через indexOf???
 		for (let j = 0; j < vowels.length; j++) {
 			if (word[i] === vowels[j]) {
@@ -234,4 +260,17 @@ function findVowelsNums(word) {
 	return vowelsNums;
 }
 
+//на какой слог ударение
+function findSyllableWithAccent(word) {
+	let syllableNum = -1;
+	let accentPos = findAccentPosition(word);
+	let vowelsPos = findVowelsNums(word);
+	for (let i = 0; i < vowelsPos.length; i++) {
+		if (accentPos === vowelsPos[i] + 1) {
+			syllableNum = i + 1;
+			break;
+		}  
+	}
+	return syllableNum;
+}
 /*допустить чтобы нь/ль/вь/дь/жь/мь/зь/рь в середине слова читались как слог, и нет одновременно???*/
