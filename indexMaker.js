@@ -1,25 +1,29 @@
 const constants = require('./modules/constants');
 const vowels = constants.vowels;
+const equalLetters = constants.equalLetters;
 let findVowelsNums = require('./modules/findVowelsNums');
 let getYo = require('./modules/getYo');
 let stressForOneSyllable = require('./modules/stressForOneSyllable');
-
+let checkLetterEqual = require('./modules/checkLetterEqual');
 let findSyllableWithStress = require('./modules/findSyllableWithStress');
 
 
 let fs = require('fs');
-let termins = fs.readFileSync('./nouns.csv').toString().split("\r\n");
+let termins = fs.readFileSync('./nouns2.csv').toString().split("\n");
 
-//let termins = ['аз', 'башма\'к', 'маз', 'о\'дин', 'пржже\'ннка', 'одолже\'ние', 'уваже\'ние', "А'зией","А'зиею","А'зии","А'зию","А'зия","А'нглией","А'нглиею","А'нглии","А'нглию"];
+//let termins = ['Аз', 'Башма\'к', 'маз', 'о\'дин', 'пржже\'ннка', 'одолже\'ние', 'уваже\'ние', "А'зией","А'зиею","А'зии","А'зию","А'зия","А'нглией","А'нглиею","А'нглии","А'нглию"];
+
 
 let indexWords = {};
 let indexSyllables = {};
 
-//termins.length
-function indexWordsForming (startI,stopI) {
+	let startI = 0;
+	let stopI = termins.length;
+
 	for (let i = startI; i < stopI; i++){
 	
-		let word1 = termins[i];
+		let word1 = termins[i].toLowerCase();
+
 
 		word1 = getYo(word1);
 		word1 = stressForOneSyllable(word1);
@@ -35,47 +39,70 @@ function indexWordsForming (startI,stopI) {
 		}
 		let syl1 = word1.slice(startPos,endPos);
 	
-		//let words = [];
-		//words.push(word1);
-		//indexSyllables[syl1] = words;
-
-		let syllables = [];
-		syllables.push(syl1);
+		let syllables = {};
 		indexWords[word1] = syllables;
 
 		let stressedVowelPos = vowels1[findedSyl];
 		//цикл для того, чтобы найти все варианты слогов
 		for (let j = startPos; j <= stressedVowelPos; j++) {
-			for (let k = endPos; k>=stressedVowelPos+2;k--) {
+			for (let k = endPos; k >= stressedVowelPos + 2; k--) {
+			
 				newSyl = word1.slice(j,k);
-				if (syllables.indexOf(newSyl) !== -1) {continue;}
-				syllables.push(newSyl);
-				indexWords[word1] = syllables;
-			/*
-			if (indexSyllables[newSyl] !== undefined) {
-				if (indexSyllables[newSyl].indexOf(word1) !== -1) {continue;}
-				words = indexSyllables[newSyl];
-				words.push(word1);
-			}
-			indexSyllables[newSyl] = words;*/
+				syllables[newSyl] = 1;
+				
+
+				if (indexSyllables[newSyl] === undefined) {
+					indexSyllables[newSyl] = {};
+				}
+				
+				indexSyllables[newSyl][word1]=1;
+
+				for (let m = 0; m < newSyl.length; m++) {
+					eL = giveEqualLetters(newSyl[m]);
+					if (!eL[0]) continue;
+
+					for (let l = 0; l < eL.length; l++) {
+					if (!eL[l]||newSyl.length<3) continue;
+
+						newSyl=newSyl.replace(newSyl[m], eL[l]);
+						syllables[newSyl] = 1;
+						if (indexSyllables[newSyl] === undefined) {
+							indexSyllables[newSyl] = {};
+						}
+						indexSyllables[newSyl][word1]=1;
+					}
+				}
 			}
 		}
+
+
 		console.log(i);
-	
 	}
-	return indexWords;
-}
 
 
 
 
-indexWords=indexWordsForming(100000,200000);
+
+
 words = JSON.stringify(indexWords);
-fs.writeFileSync('./files/words2.json', words);
+fs.writeFileSync('./files/wordsNEW.json', words);
+
+let syllables = JSON.stringify(indexSyllables);
+fs.writeFileSync('./files/syllablesNEW.json', syllables);
 
 
-//let syllables = JSON.stringify(indexSyllables);
+//console.log(indexWords);
+//console.log(indexSyllables);
 
-
-
-//fs.writeFileSync('./files/syllables.json', syllables);
+function giveEqualLetters(letter) {
+	let eqLetter = [];
+	for (let i = 0; i < equalLetters.length; i++) {
+		if (equalLetters[i][0] === letter) {
+			eqLetter.push(equalLetters[i][1]);
+		}
+		if (equalLetters[i][1] === letter) {
+			eqLetter.push(equalLetters[i][0]);
+		}
+	}
+	return eqLetter;
+}

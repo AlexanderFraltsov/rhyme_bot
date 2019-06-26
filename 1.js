@@ -92,8 +92,9 @@ function getRhyme (termins) {
 // проверяет, что слова отличаются только окончаниями
 function findOnlyEndingDiff (word1, word2) {
 	let l = word1.length;
+	let partOfWord = Math.round(l*0.4);
 	if (l < word2.length) l = word2.length;
-	if (word1.slice(0,l-3) === word2.slice(0,l-3)) {
+	if (word1.slice(0,l-partOfWord) === word2.slice(0,l-partOfWord)) {
 		return true;
 	}
 	return false;
