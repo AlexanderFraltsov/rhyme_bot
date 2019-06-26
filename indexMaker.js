@@ -6,6 +6,7 @@ let getYo = require('./modules/getYo');
 let stressForOneSyllable = require('./modules/stressForOneSyllable');
 let checkLetterEqual = require('./modules/checkLetterEqual');
 let findSyllableWithStress = require('./modules/findSyllableWithStress');
+let findSylPermutations = require('./modules/findSylPermutations');
 
 
 let fs = require('fs');
@@ -29,12 +30,15 @@ let indexSyllables = {};
 		word1 = stressForOneSyllable(word1);
 		let vowels1 = findVowelsNums(word1);
 		let startPos = 0;
+        // номер слога, начиная с 0
 		let findedSyl = findSyllableWithStress(word1)-1;
 		if (findedSyl !== 0) {
+            // позиция предыдущей гласной в слове + 1
 			startPos = vowels1[findedSyl-1]+1;
 		}
 		let endPos = word1.length;
 		if (findedSyl !== vowels1.length-1) {
+            // позиция последующей гласной
 			endPos = vowels1[findedSyl+1];
 		}
 		let syl1 = word1.slice(startPos,endPos);
@@ -54,24 +58,22 @@ let indexSyllables = {};
 				if (indexSyllables[newSyl] === undefined) {
 					indexSyllables[newSyl] = {};
 				}
-				
+
 				indexSyllables[newSyl][word1]=1;
 
-				for (let m = 0; m < newSyl.length; m++) {
-					eL = giveEqualLetters(newSyl[m]);
-					if (!eL[0]) continue;
+                if (newSyl.length < 3) {
+                    continue;
+                }
 
-					for (let l = 0; l < eL.length; l++) {
-					if (!eL[l]||newSyl.length<3) continue;
-
-						newSyl=newSyl.replace(newSyl[m], eL[l]);
-						syllables[newSyl] = 1;
-						if (indexSyllables[newSyl] === undefined) {
-							indexSyllables[newSyl] = {};
-						}
-						indexSyllables[newSyl][word1]=1;
-					}
-				}
+                permutations = findSylPermutations(newSyl);
+                for (let m = 0; m < permutations.length; m++) {
+                    _newSyl = permutations[m];
+                    syllables[_newSyl] = 1;
+                    if (indexSyllables[_newSyl] === undefined) {
+                        indexSyllables[_newSyl] = {};
+                    }
+                    indexSyllables[_newSyl][word1] = 1;
+                }
 			}
 		}
 
@@ -94,15 +96,3 @@ fs.writeFileSync('./files/syllablesNEW.json', syllables);
 //console.log(indexWords);
 //console.log(indexSyllables);
 
-function giveEqualLetters(letter) {
-	let eqLetter = [];
-	for (let i = 0; i < equalLetters.length; i++) {
-		if (equalLetters[i][0] === letter) {
-			eqLetter.push(equalLetters[i][1]);
-		}
-		if (equalLetters[i][1] === letter) {
-			eqLetter.push(equalLetters[i][0]);
-		}
-	}
-	return eqLetter;
-}
