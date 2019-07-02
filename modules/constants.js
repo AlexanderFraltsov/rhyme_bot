@@ -5,17 +5,17 @@ const c = ['б', 'в', 'г', 'д', 'ж', 'з', 'й', 'к', 'л', 'м', 'н', 'п
 //other letters
 const oL = ['ь', 'ъ', 'Ь', 'Ъ'];
 //equal letters
-const eL = ['ая', 'оё', 'эе', 'ую', 'иы', 'тд', 'бп', 'вф', 'сз', 'гк', 'нм', 'рл', 'жш', 'шщ', 'тц', 'жз', 'дз', 'чш',  'сш'];
+const eL = ['ая', 'оё', 'эе', 'ую', 'иы', 'тд', 'бп', 'вф', 'сз', 'гк', 'нм', 'рл', 'жш', 'шщ', 'тц', 'чщ', 'сш', 'хк'];
 
 //alerts
 const a1 = "Уточните, на какой слог приходится ударение в вашем слове (хорошо бы получить число от 1 до 9007199254740992 включительно)";
 
 const obj = {
-	vowels:v,
-	consonant:c,
-	otherLetters:oL,
-	equalLetters:eL,
-	alert1:a1
+  vowels:v,
+  consonant:c,
+  otherLetters:oL,
+  equalLetters:eL,
+  alert1:a1
 }
 
 module.exports = obj;
