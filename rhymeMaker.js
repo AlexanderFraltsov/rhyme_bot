@@ -10,34 +10,12 @@ let possibleRhymes = {};
 let t=0;
 
 for (let word in words) {
-  let syls = [];
-  for (let syl in words[word]) {
-  /*  syls.push({
-      syllable: syl,
-      sylLength: syl.length-1
-    });
-  */
-  /*  if (syl.length>4) {
-      possibleRhymes[word] = syllables[syl];
-      break;
-    }
-    if (syl.length>3) {
-      possibleRhymes[word] = syllables[syl];
-      break;
-    }
-    if (syl.length>2) {
-      possibleRhymes[word] = syllables[syl];
-      break;
-    }*/
-    possibleRhymes[word] = syllables[syl];
-    
-  }
-  /*syls.sort(function (x, y) {
-      return y.sylLength - x.sylLength;
-  });
-*/
-  let a = [];
 
+  for (let syl in words[word]) {
+    possibleRhymes[word] = syllables[syl];
+  }
+
+  let a = [];
   outer: for (let key2 in possibleRhymes[word]) {
 
     if ( !findOnlyEndingDiff(word, key2) ) {
@@ -87,7 +65,7 @@ for (let word in words) {
     possibleRhymes = {};
   }
   if (t===210003) {
-	let index = 'Last';
+  let index = 'Last';
     let rhymes = JSON.stringify(possibleRhymes);
     fs.writeFileSync('./files/rhymes'+index+'.json', rhymes);
     possibleRhymes = {};
@@ -109,4 +87,4 @@ function findOnlyEndingDiff (word1, word2) {
     return true;
   }
   return false;
-};
+}

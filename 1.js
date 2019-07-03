@@ -1,48 +1,25 @@
 /*-----------------------CONSTANTS-----------------------*/
 const constants = require('./modules/constants');
-
-const vowels = constants.vowels;
-const consonant = constants.consonant;
-const otherLetters = constants.otherLetters
-const equalLetters = constants.equalLetters;
 const alert1 = constants.alert1;
 
 /*-----------------------FUNCTIONS-----------------------*/
-let findAccentPosition = require('./modules/findStressPosition');
-let getAccent = require('./modules/getStress');
+let findStressPosition = require('./modules/findStressPosition');
+let getStress = require('./modules/getStress');
 let getYo = require('./modules/getYo');
-let checkLetterEqual = require('./modules/checkLetterEqual');
-let findVowelsNums = require('./modules/findVowelsNums');
-let accentForOneSyllable = require('./modules/stressForOneSyllable');
-let findSyllableWithAccent = require('./modules/findSyllableWithStress');
-let wordDivide = require('./modules/wordDivide');
-let scoreSyllables = require('./modules/scoreSyllables');
-let scoreWords = require('./modules/scoreWords');
-
-/*загружаем словарь ударений, выделяем из него термины в массив - termins (пока что массив для отладки)*/
+let stressForOneSyllable = require('./modules/stressForOneSyllable');
+const start = new Date().getTime();
+/*загружаем словарь ударений и словарь рифм*/
 let fs = require('fs');
 
-function readListOfWords(filename, callback) {
-
-	let listOfWords;
-	fs.readFile(filename, function (error, data) {
-		if (error) {
-			throw error;
-		}
-		listOfWords = data.toString().split("\r\n");
-		
-		callback(listOfWords);
-	});
-}
-
-let termins = ["нарко'тик", "ко'тик", "сапо'г", "кра'н", "шлакобло'к", "суббо'тник", "мо'тик", "ко'тики"];
-//termins = fs.readFileSync('./nouns-2.txt').toString().split("\r\n");
-
+let termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
+let rhymes = JSON.parse(fs.readFileSync('./files/rhymesNEW.JSON'));
+//let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
+const end = new Date().getTime();
+console.log('Время выполнения = ' + (end-start) + 'ms');
 /*-------------------------------------------------------*/
-
 //получаем слово - word - от пользователя (пока что задаем сами)
-let receivedWord = "КОТИК";
-/* = prompt('введи свое слово, щенок', 'котик');*/
+let receivedWord = "щенок";
+
 
 receivedWord = receivedWord.toLowerCase();
 
@@ -50,53 +27,38 @@ receivedWord = receivedWord.toLowerCase();
 receivedWord = getYo(receivedWord);
 
 //если в слове одна гласная, ставим на неё ударение
-receivedWord = accentForOneSyllable(receivedWord);
+receivedWord = stressForOneSyllable(receivedWord);
+
 
 //заменяем слово на слово с ударением (из словаря)
-if (findAccentPosition(receivedWord) === -1) {
-	//производим поиск слова в словаре (там оно с ударением) и записываемв переменную, чтобы не искать дважды
-	receivedWord = getAccent(receivedWord, termins);
+if (findStressPosition(receivedWord) === -1) {
+  //производим поиск слова в словаре (там оно с ударением) и записываемв переменную, чтобы не искать дважды
+  receivedWord = getStress(receivedWord, termins);
 }
 
 //если его нет, или спрашиваем, на какой оно слог
-if (findAccentPosition(receivedWord) === -1) {
-	console.log(alert1);
+if (findStressPosition(receivedWord) === -1) {
+  console.log(alert1);
 }
 console.log(receivedWord);
-console.log(termins);
-getRhyme (termins);
-//let low = readListOfWords('./nouns-2.txt', getRhyme);
 
-let rhyme = "no";
 
-function getRhyme (termins) {
-	let max = 0;
-	let rhyme = "no";
-	for (let i = 0; i < termins.length; i++) {
-		if (receivedWord === termins[i]) continue;
-		let termin = termins[i];
-		if (findAccentPosition(termin) === -1) {
-			termin = getYo(termin);
-			termin = accentForOneSyllable(termin);
-		}
 
-		let score = scoreWords(receivedWord, termin);
-		if (score > max) {
-			max = score;
-			rhyme = termin;
-		}
-	}
-	console.log(rhyme);
+let rhyme = 'no';
+
+//получаем
+rhyme = getRhyme(receivedWord,rhymes);
+console.log(rhyme);
+
+
+
+
+function getRhyme (word, rhymesDictionary) {
+  rhyme = rhymesDictionary[word];
+  return rhyme;
 }
 
-// проверяет, что слова отличаются только окончаниями
-function findOnlyEndingDiff (word1, word2) {
-	let l = word1.length;
-	let partOfWord = Math.round(l*0.4);
-	if (l < word2.length) l = word2.length;
-	if (word1.slice(0,l-partOfWord) === word2.slice(0,l-partOfWord)) {
-		return true;
-	}
-	return false;
-}
-/*допустить чтобы нь/ль/вь/дь/жь/мь/зь/рь в середине слова читались как слог, и нет одновременно???*/
+/*
+
+
+*/
