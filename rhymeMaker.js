@@ -67,7 +67,8 @@ function rhymeMaker(wordsFileName, syllablesFileName, rhymesFileName) {
       possibleRhymes = {};
     }
   }
-  //собираем общий файл с рифмами
+  //собираем общий файл с рифмами (но это не выходит)
+  /*
   let rhymesAll = {};
     for (let i = 1; i <= maxI; i++) {
     console.log(i);
@@ -78,7 +79,7 @@ function rhymeMaker(wordsFileName, syllablesFileName, rhymesFileName) {
   let objFin = JSON.parse(fs.readFileSync('./files/'+ rhymesFileName + 'Last.json'));
   Object.assign(rhymesAll, objFin);
   objFin = {};
-  fs.writeFileSync('./files/' + rhymesFileName + '.json', JSON.stringify(rhymesAll));
+  fs.writeFileSync('./files/' + rhymesFileName + '.json', JSON.stringify(rhymesAll));*/
 }
 
 
