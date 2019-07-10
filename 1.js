@@ -16,7 +16,7 @@ const start = new Date().getTime();
 let fs = require('fs');
 
 
-let rhymes = JSON.parse(fs.readFileSync('./files/rhymesNEW.JSON'));
+//let rhymes = JSON.parse(fs.readFileSync('./files/rhymesNEW.JSON'));
 let termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
 let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
 
@@ -24,7 +24,7 @@ let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
 
 /*-------------------------------------------------------*/
 //получаем слово - word - от пользователя (пока что задаем сами)
-let receivedWord = "щенок";
+let receivedWord = "щенка'х";
 
 
 receivedWord = receivedWord.toLowerCase();
@@ -55,9 +55,9 @@ if (findStressPosition(receivedWord) === -1) {
 }
 
 //получаем
-if (rhymes[receivedWord] !== undefined) {
+/*if (rhymes[receivedWord] !== undefined) {
   tenRhymes = getRhyme(receivedWord, rhymes);
-} else {
+} else */{
   //в этом случае надо подобрать рифму минуя словарь
   //приходится очищать память, иначе происходит краш!!!
   const start2 = new Date().getTime();
