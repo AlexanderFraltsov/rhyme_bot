@@ -1,3 +1,6 @@
 *.csv
 *.txt
 files
+modules/token.js
+package-lock.json
+node_modules
