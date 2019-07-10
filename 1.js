@@ -17,14 +17,14 @@ let fs = require('fs');
 
 
 let rhymes = JSON.parse(fs.readFileSync('./files/rhymesNEW.JSON'));
-
-
+let termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
+let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
 
 
 
 /*-------------------------------------------------------*/
 //получаем слово - word - от пользователя (пока что задаем сами)
-let receivedWord = "щенка'х";
+let receivedWord = "щенок";
 
 
 receivedWord = receivedWord.toLowerCase();
@@ -41,10 +41,11 @@ let tenRhymes = {};
 
 //заменяем слово на слово с ударением (из словаря)
 if (findStressPosition(receivedWord) === -1) {
-  let termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
+
+  //let termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
   //производим поиск слова в словаре (там оно с ударением) и записываемв переменную, чтобы не искать дважды
   receivedWord = getStress(receivedWord, termins);
-  termins = {};
+  //termins = {};
 }
 
 //если его нет, или спрашиваем, на какой оно слог
@@ -60,9 +61,9 @@ if (rhymes[receivedWord] !== undefined) {
   //в этом случае надо подобрать рифму минуя словарь
   //приходится очищать память, иначе происходит краш!!!
   const start2 = new Date().getTime();
-  rhymes = {};
+  //rhymes = {};
 
-  let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
+  //let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
 
 
   let word1 = receivedWord;
@@ -146,11 +147,16 @@ console.log('Время выполнения = ' + (end-start) + 'ms');
 
 console.log(rhyme);
 
+
+
+/*-----------------------FUNCTIONS-----------------------*/
+//выгружает десятку рифм для word
 function getRhyme (word, rhymesDictionary) {
   let rhymeArray = rhymesDictionary[word];
   return rhymeArray;
 }
 
+//выбирает один случайный ключ из объекта с 10 ключами
 function getOneRhyme (rhymeArray) {
   let randomNumber = Math.floor((Math.random() * 10) );
   let x = 0;
@@ -162,11 +168,6 @@ function getOneRhyme (rhymeArray) {
   }
   return rhyme;
 }
-
-/*
-
-
-*/
 
 // проверяет, что слова отличаются только окончаниями
 function findOnlyEndingDiff (word1, word2) {
