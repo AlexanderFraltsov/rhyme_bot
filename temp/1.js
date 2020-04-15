@@ -1,41 +1,55 @@
-/*-----------------------CONSTANTS-----------------------*/
-const constants = require('./modules/constants');
-const alert1 = constants.alert1;
+const fs = require('fs');
 
-/*-----------------------FUNCTIONS-----------------------*/
-let findStressPosition = require('./modules/findStressPosition');
-let getStress = require('./modules/getStress');
-let getYo = require('./modules/getYo');
-let stressForOneSyllable = require('./modules/stressForOneSyllable');
-let findSyllableWithStress = require('./modules/findSyllableWithStress');
-let findVowelsNums = require('./modules/findVowelsNums');
-let scoreWords = require('./modules/scoreWords');
+const { alert1 } = require('../modules/constants');
+const findStressPosition = require('../modules/findStressPosition');
+const getStress = require('../modules/getStress');
+const getYo = require('../modules/getYo');
+const stressForOneSyllable = require('../modules/stressForOneSyllable');
+const findSyllableWithStress = require('../modules/findSyllableWithStress');
+const findVowelsNums = require('../modules/findVowelsNums');
+const scoreWords = require('../modules/scoreWords');
 
 const start = new Date().getTime();
-/*загружаем словарь ударений и словарь рифм*/
-let fs = require('fs');
+/* загружаем словарь ударений и словарь рифм */
 
+// const rhymes = JSON.parse(fs.readFileSync('./files/rhymesNEW.JSON'));
+const termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
+const syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
 
-//let rhymes = JSON.parse(fs.readFileSync('./files/rhymesNEW.JSON'));
-let termins = JSON.parse(fs.readFileSync('./files/wordsNEW.JSON'));
-let syllables = JSON.parse(fs.readFileSync('./files/syllablesNEW.JSON'));
+/*-----------------------FUNCTIONS-----------------------*/
+// выгружает десятку рифм для word
+const getRhyme = (word, rhymesDictionary) => {
+  return rhymesDictionary[word];
+};
 
+// выбирает один случайный ключ из объекта с 10 ключами
+const getOneRhyme = (rhymeArray) => {
+  const randomNumber = Math.floor((Math.random() * 10) );
+  let x = 0;
+  for (const rhyme of rhymeArray) {
+    if (x === randomNumber) return rhyme;
+    x++;
+  }
+};
 
+// проверяет, что слова отличаются только окончаниями
+const findOnlyEndingDiff = (word1, word2) => {
+  const maxLength = Math.max(word1.length, word2.length);
+  const partOfWord = Math.round(maxLength * 0.4);
+
+  return (word1.slice(0, maxLength - partOfWord) === word2.slice(0, maxLength - partOfWord));
+};
 
 /*-------------------------------------------------------*/
-//получаем слово - word - от пользователя (пока что задаем сами)
-let receivedWord = "щенка'х";
+// получаем слово - word - от пользователя (пока что задаем сами)
+let receivedWord = "кошка";
 
+// предусматриваем слово с "ё" - ударение всегда падает на него
+// если в слове одна гласная, ставим на неё ударение
+receivedWord = stressForOneSyllable(
+  getYo(receivedWord.toLowerCase())
+);
 
-receivedWord = receivedWord.toLowerCase();
-
-//предусматриваем слово с "ё" - ударение всегда падает на него
-receivedWord = getYo(receivedWord);
-
-//если в слове одна гласная, ставим на неё ударение
-receivedWord = stressForOneSyllable(receivedWord);
-
-console.log(receivedWord);
 let rhyme = 'no';
 let tenRhymes = {};
 
@@ -55,7 +69,7 @@ if (findStressPosition(receivedWord) === -1) {
 }
 
 //получаем
-/*if (rhymes[receivedWord] !== undefined) {
+/*if (!rhymes[receivedWord]) {
   tenRhymes = getRhyme(receivedWord, rhymes);
 } else */{
   //в этом случае надо подобрать рифму минуя словарь
@@ -67,7 +81,7 @@ if (findStressPosition(receivedWord) === -1) {
 
 
   let word1 = receivedWord;
-  //находим самый крупный вариант ударного слога
+  // находим самый крупный вариант ударного слога
   let vowels1 = findVowelsNums(word1);
   let startPos = 0;
   // номер слога, начиная с 0
@@ -81,33 +95,33 @@ if (findStressPosition(receivedWord) === -1) {
     // позиция последующей гласной
     endPos = vowels1[findedSyl + 1];
   }
-  let syl1 = word1.slice(startPos, endPos);
+  //let syl1 = word1.slice(startPos, endPos);
   let stressedVowelPos = vowels1[findedSyl];
 
   //создаем объект, включающий слоги для нашего слова видом {syl1:1, syl2:1, ...}
   let sylsOfReceivedWorld = {};
   for (let j = startPos; j <= stressedVowelPos; j++) {
     for (let k = endPos; k >= stressedVowelPos + 2; k--) {
-      newSyl = word1.slice(j, k);
+      const newSyl = word1.slice(j, k);
       if (newSyl.length < 3) continue;
       if ( (newSyl.length > 4 && (~newSyl.indexOf("ь") || ~newSyl.indexOf("ъ"))) || newSyl.length > 5 ) continue;
       if ( (endPos-startPos > 4 || (endPos-startPos > 5 && (~newSyl.indexOf("ь") || ~newSyl.indexOf("ъ")))) && newSyl.length < 4 ) continue;
 
-      if (sylsOfReceivedWorld[newSyl] === undefined) {
+      if (!sylsOfReceivedWorld[newSyl]) {
         sylsOfReceivedWorld[newSyl] = {};
       }
-      sylsOfReceivedWorld[newSyl]=1;
+      sylsOfReceivedWorld[newSyl] = 1;
     }
   }
 
 
-  for (let syl in sylsOfReceivedWorld) {
+  for (const syl in sylsOfReceivedWorld) {
     possibleRhymes = syllables[syl];
   }
-  let a = [];
-  outer: for (let key2 in possibleRhymes) {
+  const a = [];
+  outer: for (const key2 in possibleRhymes) {
     if ( !findOnlyEndingDiff(word1, key2) ) {
-      let scoreRes = scoreWords(word1, key2);
+      const scoreRes = scoreWords(word1, key2);
       let i = a.length - 1;
       while (i > a.length - 5) {
         if (i < 0) break;
@@ -121,19 +135,20 @@ if (findStressPosition(receivedWord) === -1) {
         i--;
       }
       a.push({
-        rhyme: key2, 
+        rhyme: key2,
         score: scoreRes
       });
     }
   }
-  a.sort(function (x, y) {
-    return y.score - x.score;
-  });
-  if (a.length > 10)  a.length = 10;
-  let rhymesVar = {};
-  for (let i = 0; i < a.length; i++) {
-    rhymesVar[a[i].rhyme] = a[i].score;
-  }
+  a.sort((x, y) => y.score - x.score);
+
+  if (a.length > 10) a.length = 10;
+  const rhymesVar = {};
+
+  a.forEach( el => {
+    rhymesVar[el.rhyme] = el.score;
+  })
+
   tenRhymes = rhymesVar;
 
   const end2 = new Date().getTime();
@@ -144,38 +159,4 @@ rhyme = getOneRhyme (tenRhymes);
 
 const end = new Date().getTime();
 console.log('Время выполнения = ' + (end-start) + 'ms');
-
 console.log(rhyme);
-
-
-
-/*-----------------------FUNCTIONS-----------------------*/
-//выгружает десятку рифм для word
-function getRhyme (word, rhymesDictionary) {
-  let rhymeArray = rhymesDictionary[word];
-  return rhymeArray;
-}
-
-//выбирает один случайный ключ из объекта с 10 ключами
-function getOneRhyme (rhymeArray) {
-  let randomNumber = Math.floor((Math.random() * 10) );
-  let x = 0;
-  for (let key in rhymeArray) {
-    if (x === randomNumber) {
-      rhyme = key;
-    }
-    x++;
-  }
-  return rhyme;
-}
-
-// проверяет, что слова отличаются только окончаниями
-function findOnlyEndingDiff (word1, word2) {
-  let l = word1.length;
-  if (l < word2.length) l = word2.length;
-  let partOfWord = Math.round(l * 0.4);
-  if (word1.slice(0, l - partOfWord) === word2.slice(0, l - partOfWord)) {
-    return true;
-  }
-  return false;
-}

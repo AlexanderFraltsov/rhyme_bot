@@ -1,16 +1,12 @@
-const constants = require('./constants');
-const vowels = constants.vowels;
+const { vowels } = require('./constants');
 
-//создаёт массив с позициями гласных букв в слове
-function findVowelsNums(word) {
-	const a = vowels.join("");
-	let vowelsNums = [];
-	for (let i = 0; i < word.length; i++) {
-		if ( ~a.indexOf(word[i]) ) {
-			vowelsNums.push(i);
-		}
-	}
+module.exports = (word) => {
+	const stringOfVowels = vowels.join('');
+	const vowelsNums = [];
+
+	word.split('').forEach( (el, index) => {
+		if ( ~stringOfVowels.indexOf(el) ) vowelsNums.push(index);
+	})
+
 	return vowelsNums;
-}
-
-module.exports = findVowelsNums;
+};

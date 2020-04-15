@@ -1,22 +1,18 @@
-let findStressPosition = require('./findStressPosition');
-let stressForOneSyllable = require('./stressForOneSyllable');
-let getYo = require('./getYo');
-let findVowelsNums = require('./findVowelsNums');
+const findStressPosition = require('./findStressPosition');
+const stressForOneSyllable = require('./stressForOneSyllable');
+const getYo = require('./getYo');
+const findVowelsNums = require('./findVowelsNums');
 
-//на какой слог ударение
-function findSyllableWithStress(word) {
+module.exports = (word) => {
 	let syllableNum = -1;
 	word = stressForOneSyllable(word);
 	word = getYo(word);
-	let stressPos = findStressPosition(word);
-	let vowelsPos = findVowelsNums(word);
-	for (let i = 0; i < vowelsPos.length; i++) {
-		if (stressPos === vowelsPos[i] + 1) {
-			syllableNum = i + 1;
-			break;
-		}  
-	}
-	return syllableNum;
-}
+	const stressPos = findStressPosition(word);
+	const vowelsPos = findVowelsNums(word);
 
-module.exports = findSyllableWithStress;
+	vowelsPos.forEach((pos, index) => {
+		if (stressPos === pos + 1) syllableNum = index + 1;
+	});
+
+	return syllableNum;
+};

@@ -1,43 +1,42 @@
-const constants = require('./constants');
-const equalLetters = constants.equalLetters;
+const { equalLetters } = require('./constants');
 
-function giveEqualLetters(letter) {
-	let eqLetter = [letter];
-	for (let i = 0; i < equalLetters.length; i++) {
-		if (equalLetters[i][0] === letter) {
-			eqLetter.push(equalLetters[i][1]);
+const giveEqualLetters = (letter) => {
+    const eqLetter = [letter];
+    equalLetters.forEach(pair => {
+        if (pair[0] === letter) {
+			eqLetter.push(pair[1]);
 		}
-		if (equalLetters[i][1] === letter) {
-			eqLetter.push(equalLetters[i][0]);
+		if (pair[1] === letter) {
+			eqLetter.push(pair[0]);
 		}
-	}
+    })
 	return eqLetter;
 }
 
-function findSylPermutations(syl) {
+const findSylPermutations = (syl) => {
     let permutations = [];
-    for (let i = 0; i < syl.length; i++) {
-        let this_letter = syl[i];
-        let el = giveEqualLetters(this_letter);
-        if (i) {
-            permutations_old = permutations;
+    syl.forEach( (letterOfSyl, index) => {
+        const el = giveEqualLetters(letterOfSyl);
+        if (index) {
+            const permutations_old = permutations;
             permutations = [];
-            for (let j = 0; j < el.length; j++) {
-                for (let k = 0; k < permutations_old.length; k++) {
-                    let score = el[j] === this_letter ? 0 : 1;
-                    score += permutations_old[k][1];
+            el.forEach( letter => {
+                permutations_old.forEach( x => {
+                    let score = letter === letterOfSyl ? 0 : 1;
+                    score += x[1];
                     if (score < 3) {
-                        permutations.push([permutations_old[k][0] + el[j], score]);
+                        permutations.push([x[0] + letter, score]);
                     }
-                }
-            }
+                });
+            });
         } else {
-            for (let j = 0; j < el.length; j++) {
-                let score = el[j] === this_letter ? 0 : 1;
-                permutations.push([el[j], score]);
-            }
+            el.forEach( letter => {
+                const score = letter === letterOfSyl ? 0 : 1;
+                permutations.push([letter, score]);
+            });
         }
-    }
+    })
+
     return permutations.map(x => x[0]);
 }
 
