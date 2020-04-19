@@ -3,20 +3,22 @@
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/AlexanderFraltsov/rhyme_bot.git"
   },
   "type": "commonjs",
   "description": "i really dont know",
   "main": "bot.js",
   "scripts": {
-    "start": "bot.js",
-    "lint": "eslint ./ --ignore-path .gitignore --fix"
+    "start": "node src/server.js",
+    "lint": "eslint ./ --fix"
   },
   "license": "ISC",
   "engines": {
     "node": ">=12.0.0"
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
+    "https-proxy-agent": "^5.0.0",
     "telegraf": "^3.37.0"
   },
   "devDependencies": {
