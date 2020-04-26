@@ -1,10 +1,11 @@
 const HttpsProxyAgent = require('https-proxy-agent');
+const { PROXY_HOST, PROXY_PORT } = require('./config');
 
 const proxyAgent = {
   telegram: {
     agent: new HttpsProxyAgent({
-      host: process.env.PROXY_HOST,
-      port: process.env.PROXY_PORT,
+      host: PROXY_HOST,
+      port: PROXY_PORT,
       keepAlive: true,
       keepAliveMsecs: 10000
     })

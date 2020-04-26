@@ -6,8 +6,8 @@
     "url": "https://github.com/AlexanderFraltsov/rhyme_bot.git"
   },
   "type": "commonjs",
-  "description": "i really dont know",
-  "main": "bot.js",
+  "description": "i really don't know",
+  "main": "server.js",
   "scripts": {
     "start": "node src/server.js",
     "lint": "eslint ./ --fix"
@@ -19,6 +19,8 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "https-proxy-agent": "^5.0.0",
+    "mysql2": "^2.1.0",
+    "sequelize": "^5.21.7",
     "telegraf": "^3.37.0"
   },
   "devDependencies": {

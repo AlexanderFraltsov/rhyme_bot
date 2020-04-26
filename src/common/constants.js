@@ -1,4 +1,4 @@
-const lettersToArray = (string) => (string+string.toUpperCase()).split('');
+const lettersToArray = string => (string + string.toUpperCase()).split('');
 
 const VOWELS = lettersToArray('аеёиоуыэюя');
 const CONSONANTS = lettersToArray('бвгджзйклмнпрстфхцчшщ');
