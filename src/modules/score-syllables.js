@@ -1,99 +1,66 @@
 const checkLettersEqual = require('./check-letters-equal');
-const findStressPosition = require('./find-stress-position');
 const findVowelsNums = require('./find-vowels-nums');
 
-/* вспомогательная функция, перебирает буквы, сравнивает,
-начисляет очки, чтобы не повторять код (sic!) */
-const addScores = ({
-  startI,
-  endI,
-  startJ,
-  endJ,
-  syl1,
-  syl2,
-  scoreMultiplier
-}) => {
+const VOWELS_WEIGHT = 3;
+const CONSONANTS_WEIGHT = VOWELS_WEIGHT / 3;
+
+const addScores = ({ toCompare, scoreMultiplier }) => {
+  const [first, second] = toCompare;
   let addScore = 0;
-  for (let i = startI; i < endI; i++) {
-    for (let j = startJ; j < endJ; j++) {
-      if (checkLettersEqual(syl1[i], syl1[i - 1])) break;
-      if (checkLettersEqual(syl2[j], syl2[j - 1])) continue;
-      if (syl1[i] === syl2[j]) {
+
+  first.split('').forEach(symbol1 => {
+    second.split('').forEach(symbol2 => {
+      if (symbol1 === symbol2) {
         addScore += 1.5 * scoreMultiplier;
-        break;
-      }
-      if (checkLettersEqual(syl1[i], syl2[j])) {
+      } else if (checkLettersEqual(symbol1, symbol2)) {
         addScore += scoreMultiplier;
-        break;
       }
-    }
-  }
+    });
+  });
+
   return addScore;
 };
 
-// начисляет очки за совпадение слогов
 const scoreSyllables = (syl1, syl2) => {
+  if (!syl1 || !syl2) return 0;
+
   let score = 0;
 
-  // мощь гласных и согласных
-  const vowelWeight = 3;
-  const consonantWeight = vowelWeight / 3;
-  // предусмотрим ситуацию когда слог сравнивается с undefined
-  let syl1mod = syl1 || '';
-  let syl2mod = syl2 || '';
+  const [vowel1Pos] = findVowelsNums(syl1);
+  const [vowel2Pos] = findVowelsNums(syl2);
 
-  if (findStressPosition(syl1) !== -1) {
-    syl1mod = syl1.replace("'", '');
-    syl2mod = syl2.replace("'", '');
+  const vowel1 = syl1[vowel1Pos];
+  const vowel2 = syl2[vowel2Pos];
+
+  if (vowel1 === vowel2) {
+    score += 1.25 * VOWELS_WEIGHT;
+  } else if (checkLettersEqual(vowel1, vowel2)) {
+    score += VOWELS_WEIGHT;
   }
-  const [vowel1] = findVowelsNums(syl1mod);
-  const [vowel2] = findVowelsNums(syl2mod);
-  // счет для гласных
-  if (checkLettersEqual(syl1mod[vowel1], syl2mod[vowel2])) {
-    score += vowelWeight;
-  }
-  if (syl1mod[vowel1] === syl2mod[vowel2]) {
-    score += vowelWeight / 4;
-  }
-  // для согласных до
+
+  const CONSONANTS_BEFORE_1 = syl1.slice(0, vowel1Pos);
+  const CONSONANTS_BEFORE_2 = syl2.slice(0, vowel2Pos);
+  const CONSONANTS_AFTER_1 = syl1.slice(vowel1Pos + 1);
+  const CONSONANTS_AFTER_2 = syl2.slice(vowel2Pos + 1);
+  // before
   const conditionsPrefix = {
-    startI: 0,
-    endI: vowel1,
-    startJ: 0,
-    endJ: vowel2,
-    syl1: syl1mod,
-    syl2: syl2mod,
-    scoreMultiplier: consonantWeight
+    toCompare: [CONSONANTS_BEFORE_1, CONSONANTS_BEFORE_2],
+    scoreMultiplier: CONSONANTS_WEIGHT
   };
-  // для согласных после
+  // after
   const conditionsPostfix = {
-    startI: vowel1 + 1,
-    endI: syl1mod.length,
-    startJ: vowel2 + 1,
-    endJ: syl2mod.length,
-    syl1: syl1mod,
-    syl2: syl2mod,
-    scoreMultiplier: consonantWeight
+    toCompare: [CONSONANTS_AFTER_1, CONSONANTS_AFTER_2],
+    scoreMultiplier: CONSONANTS_WEIGHT
   };
-  // для согласных до-после
+  // 1 - before, 2 - after
   const conditionsPrePostfix = {
-    startI: 0,
-    endI: vowel1,
-    startJ: vowel2 + 1,
-    endJ: syl2mod.length,
-    syl1: syl1mod,
-    syl2: syl2mod,
-    scoreMultiplier: consonantWeight / 4
+    toCompare: [CONSONANTS_BEFORE_1, CONSONANTS_AFTER_2],
+    scoreMultiplier: CONSONANTS_WEIGHT / 4
   };
-  // для согласных после-до
+  // 1 - after, 2 - before
   const conditionsPostPrefix = {
-    startI: vowel1 + 1,
-    endI: syl1mod.length,
-    startJ: 0,
-    endJ: vowel2,
-    syl1: syl1mod,
-    syl2: syl2mod,
-    scoreMultiplier: consonantWeight / 4
+    toCompare: [CONSONANTS_AFTER_1, CONSONANTS_BEFORE_2],
+    scoreMultiplier: CONSONANTS_WEIGHT / 4
   };
 
   score +=
@@ -101,6 +68,7 @@ const scoreSyllables = (syl1, syl2) => {
     addScores(conditionsPostfix) +
     addScores(conditionsPrePostfix) +
     addScores(conditionsPostPrefix);
+
   return score;
 };
 
