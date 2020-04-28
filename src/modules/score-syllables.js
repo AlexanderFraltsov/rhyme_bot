@@ -2,74 +2,75 @@ const checkLettersEqual = require('./check-letters-equal');
 const findVowelsNums = require('./find-vowels-nums');
 
 const VOWELS_WEIGHT = 3;
-const CONSONANTS_WEIGHT = VOWELS_WEIGHT / 3;
+const VOWELS_MULTIPLIER = 1.25;
 
-const addScores = ({ toCompare, scoreMultiplier }) => {
+const CONSONANTS_WEIGHT = VOWELS_WEIGHT / 3;
+const CONSONANTS_MULTIPLIER = 1.5;
+
+const compare = (sym1, sym2, weight, strongEqualMultiplier) => {
+  if (sym1 === sym2) {
+    return strongEqualMultiplier * weight;
+  }
+  if (checkLettersEqual(sym1, sym2)) {
+    return weight;
+  }
+  return 0;
+};
+
+const consonantsCheck = ({ toCompare, weight }) => {
   const [first, second] = toCompare;
-  let addScore = 0;
+  let score = 0;
 
   first.split('').forEach(symbol1 => {
     second.split('').forEach(symbol2 => {
-      if (symbol1 === symbol2) {
-        addScore += 1.5 * scoreMultiplier;
-      } else if (checkLettersEqual(symbol1, symbol2)) {
-        addScore += scoreMultiplier;
-      }
+      score += compare(symbol1, symbol2, weight, CONSONANTS_MULTIPLIER);
     });
   });
 
-  return addScore;
+  return score;
 };
 
 const scoreSyllables = (syl1, syl2) => {
   if (!syl1 || !syl2) return 0;
 
-  let score = 0;
-
   const [vowel1Pos] = findVowelsNums(syl1);
   const [vowel2Pos] = findVowelsNums(syl2);
 
-  const vowel1 = syl1[vowel1Pos];
-  const vowel2 = syl2[vowel2Pos];
-
-  if (vowel1 === vowel2) {
-    score += 1.25 * VOWELS_WEIGHT;
-  } else if (checkLettersEqual(vowel1, vowel2)) {
-    score += VOWELS_WEIGHT;
-  }
+  const VOWEL1 = syl1[vowel1Pos];
+  const VOWEL2 = syl2[vowel2Pos];
 
   const CONSONANTS_BEFORE_1 = syl1.slice(0, vowel1Pos);
   const CONSONANTS_BEFORE_2 = syl2.slice(0, vowel2Pos);
   const CONSONANTS_AFTER_1 = syl1.slice(vowel1Pos + 1);
   const CONSONANTS_AFTER_2 = syl2.slice(vowel2Pos + 1);
-  // before
-  const conditionsPrefix = {
+
+  const conditionsBefore = {
     toCompare: [CONSONANTS_BEFORE_1, CONSONANTS_BEFORE_2],
-    scoreMultiplier: CONSONANTS_WEIGHT
+    weight: CONSONANTS_WEIGHT
   };
-  // after
-  const conditionsPostfix = {
+
+  const conditionsAfter = {
     toCompare: [CONSONANTS_AFTER_1, CONSONANTS_AFTER_2],
-    scoreMultiplier: CONSONANTS_WEIGHT
+    weight: CONSONANTS_WEIGHT
   };
-  // 1 - before, 2 - after
-  const conditionsPrePostfix = {
+
+  const conditionsBeforeAfter = {
     toCompare: [CONSONANTS_BEFORE_1, CONSONANTS_AFTER_2],
-    scoreMultiplier: CONSONANTS_WEIGHT / 4
+    weight: CONSONANTS_WEIGHT / 4
   };
-  // 1 - after, 2 - before
-  const conditionsPostPrefix = {
+
+  const conditionsAfterBefore = {
     toCompare: [CONSONANTS_AFTER_1, CONSONANTS_BEFORE_2],
-    scoreMultiplier: CONSONANTS_WEIGHT / 4
+    weight: CONSONANTS_WEIGHT / 4
   };
 
-  score +=
-    addScores(conditionsPrefix) +
-    addScores(conditionsPostfix) +
-    addScores(conditionsPrePostfix) +
-    addScores(conditionsPostPrefix);
-
-  return score;
+  return (
+    compare(VOWEL1, VOWEL2, VOWELS_WEIGHT, VOWELS_MULTIPLIER) +
+    consonantsCheck(conditionsBefore) +
+    consonantsCheck(conditionsAfter) +
+    consonantsCheck(conditionsBeforeAfter) +
+    consonantsCheck(conditionsAfterBefore)
+  );
 };
 
 module.exports = scoreSyllables;
