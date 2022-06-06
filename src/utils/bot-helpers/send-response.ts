@@ -1,8 +1,6 @@
 import { Context } from 'telegraf';
 import { Update } from 'telegraf/typings/core/types/typegram';
 
-//const { ALERT1 } = require('../../common/constants');
-
 const ALERT = 'Давайте нормальное слово, существительное, а то это что, шуточки по вашему?';
 
 export const sendResponse = async (ctx: Context<Update>) => {

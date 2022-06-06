@@ -1,14 +1,12 @@
-const { Sequelize } = require('sequelize');
+import { Sequelize } from 'sequelize';
 
 import { config } from '../common/config';
-
-
 
 const { DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD } = config;
 
 export const sequelize = new Sequelize(DB_NAME, DB_USERNAME, DB_PASSWORD, {
   host: DB_HOST,
-  dialect: 'mysql',
+  dialect: 'postgres',
   pool: {
     max: 5,
     min: 0,

@@ -1,6 +1,6 @@
-import { sequelize } from '../config';
+import { Model, DataTypes } from 'sequelize';
 
-const { Model, DataTypes } = require('sequelize');
+import { sequelize } from '../config';
 
 const MODEL_NAME = 'rhyme';
 

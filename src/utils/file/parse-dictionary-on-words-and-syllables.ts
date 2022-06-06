@@ -1,6 +1,6 @@
 import { findSyllableWithStress, findSylPermutations, findVowelsNums, getHandledWord } from '../../modules';
 
-const fs = require('fs');
+import * as fs from 'fs';
 
 type TSyllables = {
   [syllable: string]: { [word: string]: number }

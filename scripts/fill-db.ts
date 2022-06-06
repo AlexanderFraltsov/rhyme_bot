@@ -1,7 +1,9 @@
 import { DbUtils } from '../src/utils';
 
-const path = require('path');
+import * as path from 'path';
 
-const rhymesPath = path.join(__dirname, '../files/rhymesNew.json');
+const filename = 'rhymesNew';
+const rhymesPath = path.join(__dirname, `../files/${filename}.json`);
 
+console.log('start parse: ', filename);
 DbUtils.fileParse(rhymesPath, DbUtils.onFileParse);

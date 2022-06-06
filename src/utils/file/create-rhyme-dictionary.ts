@@ -1,6 +1,6 @@
 import { scoreWords } from '../../modules';
 
-const fs = require('fs');
+import * as fs from 'fs';
 
 const findOnlyEndingDiff = (word1: string, word2: string): boolean => {
   const maxLength = Math.max(word1.length, word2.length);
@@ -13,9 +13,9 @@ const findOnlyEndingDiff = (word1: string, word2: string): boolean => {
 };
 
 export const createRhymeDictionary = (filespath: string, wordsFileName: string, syllablesFileName: string, rhymesFileName: string): void => {
-  const words = JSON.parse(fs.readFileSync(`${filespath}/${wordsFileName}.json`));
+  const words = JSON.parse(fs.readFileSync(`${filespath}/${wordsFileName}.json`).toString());
   const syllables = JSON.parse(
-    fs.readFileSync(`${filespath}/${syllablesFileName}.json`)
+    fs.readFileSync(`${filespath}/${syllablesFileName}.json`).toString()
   );
 
   let possibleRhymes: {[word: string]: { [rhyme: string]: number }} = {};

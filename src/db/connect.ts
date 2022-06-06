@@ -4,6 +4,7 @@ import { sequelize } from './config';
 export const connect = async (cb: () => any) => {
   try {
     await sequelize.authenticate();
+    console.log('db is authenticate');
     return cb();
   } catch (err) {
     // TODO: error handler
